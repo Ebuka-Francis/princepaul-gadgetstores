@@ -9,7 +9,7 @@ const categories = [
     shortName: "Phones",
     count: "120+ products",
     image: "/phones.jpg",
-    href: "/categories/smartphones",
+    href: "/category/Smartphones & Tablets",
   },
   {
     id: "laptops",
@@ -17,7 +17,7 @@ const categories = [
     shortName: "Laptops",
     count: "80+ products",
     image: "/laptops.jpg",
-    href: "/categories/laptops",
+    href: "/category/laptops",
   },
   {
     id: "gaming",
@@ -25,7 +25,7 @@ const categories = [
     shortName: "Consoles",
     count: "50+ products",
     image: "/gaming-console.jpg",
-    href: "/categories/gaming",
+    href: "/category/gaming",
   },
   {
     id: "accessories",
@@ -33,7 +33,7 @@ const categories = [
     shortName: "Accessories",
     count: "200+ products",
     image: "/Accessories.jpg",
-    href: "/categories/accessories",
+    href: "/category/accessories",
   },
   {
     id: "smart-gadgets",
@@ -41,7 +41,7 @@ const categories = [
     shortName: "Gadgets",
     count: "150+ products",
     image: "/smart-gadgets.jpg",
-    href: "/categories/smart-gadgets",
+    href: "/category/smart-gadgets",
   },
   {
     id: "other-devices",
@@ -49,7 +49,7 @@ const categories = [
     shortName: "Others",
     count: "100+ products",
     image: "/other-devices.jpg",
-    href: "/categories/other-devices",
+    href: "/category/other-devices",
   },
 ];
 
@@ -62,7 +62,7 @@ export default function CategorySection() {
           Shop By Category
         </h2>
         <Link
-          href="/categories"
+          href="/category"
           className="text-xs lg:text-sm font-semibold text-primary hover:underline transition-all flex items-center gap-1"
         >
           {/* "View all" on Mobile, "View all categories ->" on Desktop */}
@@ -76,7 +76,7 @@ export default function CategorySection() {
       <div className="flex md:hidden items-center justify-between gap-1 overflow-x-auto no-scrollbar py-1 px-0.5">
         {categories.slice(0, 5).map((category) => (
           <Link
-            key={category.id}
+            key={`category/${category.id}`}
             href={category.href}
             className="flex flex-col items-center gap-2 shrink-0"
           >

@@ -27,8 +27,8 @@ export const navigation = [
     name: "Other Devices",
     href: "/devices",
   },
-  {
-    name: "Deals",
-    href: "/deals",
-  },
+  // {
+  //   name: "Deals",
+  //   href: "/deals",
+  // },
 ];

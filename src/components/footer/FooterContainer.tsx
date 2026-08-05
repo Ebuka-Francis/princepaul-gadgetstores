@@ -7,7 +7,7 @@ function FooterContainer() {
   return (
     <Container className="bg-primary"> 
         <FooterBanner />
-      <Footer />
+      {/* <Footer /> */}
     </Container>
   )
 }

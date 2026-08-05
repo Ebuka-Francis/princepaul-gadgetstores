@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 export interface CartItem {
-  id: string;
+  id: string; // Firebase doc ID string
   name: string;
   price: number;
   image?: string;
@@ -55,13 +55,13 @@ export const useCartStore = create<CartState>()(
         }
       },
 
-      removeFromCart: (id) => {
+      removeFromCart: (id: string) => {
         set((state) => ({
           cart: state.cart.filter((item) => item.id !== id),
         }));
       },
 
-      updateQuantity: (id, delta) => {
+      updateQuantity: (id: string, delta: number) => {
         set((state) => ({
           cart: state.cart
             .map((item) => {
@@ -91,9 +91,9 @@ export const useCartStore = create<CartState>()(
       },
     }),
     {
-      name: "pg_cart_zustand", // localStorage key name
+      name: "pg_cart_zustand",
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ cart: state.cart }), // Only persist the cart array, not isOpen
+      partialize: (state) => ({ cart: state.cart }),
     }
   )
 );

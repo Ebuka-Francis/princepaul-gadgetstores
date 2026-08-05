@@ -17,17 +17,24 @@ import {
   LogIn,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useCartStore } from "@/store/useCartStore"; // 1. Import Zustand store
 
 import Container from "@/components/layout/Container";
 import { navigation } from "@/constants/navigation";
+import AnnouncementBar from "./AnnouncementBar";
 
 export default function Navbar() {
   const pathname = usePathname();
   const { user, openAuthModal, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // 2. Extract openCart function and total items count from Zustand
+  const openCart = useCartStore((state) => state.openCart);
+  const totalItems = useCartStore((state) => state.getTotalItems());
+
   return (
     <>
+    <AnnouncementBar />
       <header className="sticky top-0 z-50 bg-primary sm:bg-white border-b border-gray-100">
         <Container>
           <div className="flex h-16 lg:h-20 items-center justify-between gap-3 lg:gap-5 min-w-0">
@@ -37,30 +44,41 @@ export default function Navbar() {
               {/* Mobile Hamburger Toggle */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-1.5 text-white sm:text-gray-700 hover:text-primary transition-colors"
+                className="lg:hidden p-1.5 text-white sm:text-gray-700 hover:text-primary transition-colors cursor-pointer"
                 aria-label="Toggle Menu"
               >
                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
 
               {/* Logo */}
-              <Link 
-                href="/" 
-                className="shrink-0 flex items-center bg-white rounded-lg p-1.5 lg:bg-transparent lg:p-0 transition-all"
-              >
-                <Image
-                  src="/princepaulogo.png"
-                  alt="PrincePaul"
-                  width={60}
-                  height={55}
-                  priority
-                  className="w-auto h-9 lg:h-12 object-contain"
-                />
-              </Link>
+             <Link 
+  href="/" 
+  className="shrink-0 flex items-center justify-center p-1.5 lg:bg-transparent lg:p-0 transition-all"
+>
+  {/* White Logo: Shown ONLY on Mobile (hidden on desktop) */}
+  <Image
+    src="/princepaullogowhite-r.png"
+    alt="PrincePaul"
+    width={70}
+    height={50}
+    priority
+    className="w-auto h-15 object-contain block lg:hidden"
+  />
+
+  {/* Desktop Logo: Shown ONLY on Desktop/Large screens (hidden on mobile) */}
+  <Image
+    src="/princepaulogo.png" 
+    alt="PrincePaul"
+    width={70}
+    height={50}
+    priority
+    className="w-auto h-13 object-contain hidden lg:block"
+  />
+</Link>
             </div>
 
             {/* Categories Button (Desktop Only) */}
-            <button className="hidden lg:flex shrink-0 h-10 items-center justify-center gap-1.5 rounded-lg bg-primary px-3.5 text-sm text-white font-medium hover:bg-primary/90 transition-colors">
+            <button className="hidden lg:flex shrink-0 h-10 items-center justify-center gap-1.5 rounded-lg bg-primary px-3.5 text-sm text-white font-medium hover:bg-primary/90 transition-colors cursor-pointer">
               <Menu size={16} />
               <span>Categories</span>
               <ChevronDown size={14} />
@@ -93,7 +111,7 @@ export default function Navbar() {
                 className="w-full px-3 text-xs outline-none"
                 placeholder="Search for products, brands..."
               />
-              <button className="w-10 bg-primary flex items-center justify-center text-white shrink-0 hover:bg-primary/90 transition-colors">
+              <button className="w-10 bg-primary flex items-center justify-center text-white shrink-0 hover:bg-primary/90 transition-colors cursor-pointer">
                 <Search size={16} />
               </button>
             </div>
@@ -102,20 +120,28 @@ export default function Navbar() {
             <div className="flex items-center justify-end gap-3 lg:gap-5 shrink-0">
               {/* Desktop Only Actions */}
               <div className="hidden lg:flex items-center gap-5">
-                <NavIcon icon={<GitCompareArrows size={18} />} text="Compare" />
+                {/* <NavIcon icon={<GitCompareArrows size={18} />} text="Compare" /> */}
                 <NavIcon icon={<Heart size={18} />} text="Wishlist" badge={0} />
               </div>
 
-              {/* Cart Icon (Visible on Both Mobile & Desktop) */}
-              <Link href="/cart" className="relative p-1 text-white sm:text-gray-800 hover:text-primary transition-colors">
-                <ShoppingCart size={22} className="lg:w-[18px] lg:h-[18px]" />
-                <span className="absolute -right-1.5 -top-1 lg:-right-2 lg:-top-1.5 flex h-4 w-4 lg:h-3.5 lg:w-3.5 items-center justify-center rounded-full bg-primary text-[10px] lg:text-[9px] font-bold text-white">
-                  2
-                </span>
+              {/* 3. Dynamic Cart Icon Button that opens CartDrawer */}
+              <button
+                onClick={openCart}
+                className="relative p-1 text-white sm:text-gray-800 hover:text-primary transition-colors cursor-pointer flex flex-col items-center"
+                aria-label="Open Cart Drawer"
+              >
+                <div className="relative">
+                  <ShoppingCart size={22} className="lg:w-[18px] lg:h-[18px]" />
+                  {totalItems > 0 && (
+                  <span className="absolute -right-2 -top-1.5 flex h-4 w-4 lg:h-3.5 lg:w-3.5 items-center justify-center rounded-full bg-primary text-[10px] lg:text-[9px] text-white font-bold">
+  {totalItems}
+</span>
+                  )}
+                </div>
                 <span className="hidden lg:block text-[11px] font-medium text-center mt-1 text-foreground">
                   Cart
                 </span>
-              </Link>
+              </button>
 
               {/* Desktop Account / Auth Button */}
               {user ? (
@@ -159,7 +185,7 @@ export default function Navbar() {
               <div className="flex items-center justify-between border-b pb-3">
                 <span className="font-bold text-gray-900">Menu</span>
                 <button onClick={() => setIsMobileMenuOpen(false)}>
-                  <X size={20} className="text-gray-500" />
+                  <X size={20} className="text-gray-500 cursor-pointer" />
                 </button>
               </div>
 
@@ -204,7 +230,7 @@ export default function Navbar() {
                       logout();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="flex items-center gap-2 text-red-600 font-medium pt-2 border-t"
+                    className="flex items-center gap-2 text-red-600 font-medium pt-2 border-t cursor-pointer"
                   >
                     <LogOut size={18} />
                     Log Out
@@ -216,7 +242,7 @@ export default function Navbar() {
                     setIsMobileMenuOpen(false);
                     openAuthModal();
                   }}
-                  className="flex items-center justify-center gap-2 w-full py-2.5 bg-primary text-white rounded-lg font-semibold text-xs shadow-sm hover:bg-primary/90 transition-all"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 bg-primary text-white rounded-lg font-semibold text-xs shadow-sm hover:bg-primary/90 transition-all cursor-pointer"
                 >
                   <LogIn size={16} />
                   Sign In / Register

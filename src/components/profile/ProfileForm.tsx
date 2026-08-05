@@ -140,7 +140,7 @@ export default function ProfileForm() {
               type="email"
               value={profile.email || ""}
               disabled
-              className="w-full bg-slate-950/60 border border-slate-800/80 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-500 cursor-not-allowed"
+              className="w-full bg-slate-950/60 border border-slate-800/80 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white cursor-not-allowed"
             />
           </div>
 

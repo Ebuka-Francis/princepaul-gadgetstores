@@ -2,12 +2,32 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Zap, Star, ShoppingCart, ArrowRight, Loader2 } from "lucide-react";
+import { useCartStore, CartItem } from "@/store/useCartStore";
 import { useProducts } from "@/hooks/useProducts";
+import { Product } from "@/hooks/useProducts";
 
 export default function FlashDeals() {
+  const router = useRouter();
   // Fetch real-time items where isHotDeal === true
   const { products: hotDeals, loading } = useProducts(true);
+  const addToCart = useCartStore((state) => state.addToCart);
+
+  // Safely handle adding to cart without triggering navigation
+  const handleAddToCart = (e: React.MouseEvent, product: Product) => {
+    e.preventDefault();
+    e.stopPropagation(); // Prevents the click from bubbling to the parent card
+    
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.images?.[0] || "",
+      // If your store requires default quantity, color, or storage, add them here:
+      // quantity: 1, 
+    } as CartItem);
+  };
 
   if (loading) {
     return (
@@ -27,7 +47,6 @@ export default function FlashDeals() {
       
       {/* --- Section Header --- */}
       <div className="flex items-center justify-between mb-4 lg:mb-6">
-        {/* Left Header Title */}
         <div className="flex items-center gap-2">
           <Zap className="w-5 h-5 text-amber-500 fill-amber-500 hidden md:block" />
           <div>
@@ -41,7 +60,6 @@ export default function FlashDeals() {
           </div>
         </div>
 
-        {/* Right Header Controls */}
         <div className="flex items-center gap-4">
           {/* Desktop Timer Display */}
           <div className="hidden lg:flex items-center gap-2 text-xs text-gray-600 font-medium">
@@ -68,7 +86,6 @@ export default function FlashDeals() {
             </div>
           </div>
 
-          {/* View All Link */}
           <Link
             href="/deals"
             className="flex items-center gap-1 text-xs lg:text-sm font-semibold text-primary hover:underline"
@@ -94,15 +111,13 @@ export default function FlashDeals() {
             : null;
 
           return (
-            <Link
+            <div
               key={product.id}
-              href={`/product/${product.id}`}
-              className="snap-start shrink-0 w-[160px] xs:w-[175px] bg-white rounded-2xl p-3 border border-gray-100 flex flex-col justify-between shadow-2xs group"
+              onClick={() => router.push(`/products/${product.id}`)}
+              className="snap-start shrink-0 w-[160px] xs:w-[175px] bg-white rounded-2xl p-3 border border-gray-100 flex flex-col justify-between shadow-2xs group cursor-pointer"
             >
               <div>
-                {/* Image & Badge Wrapper */}
                 <div className="relative w-full aspect-square mb-2 bg-slate-50/50 rounded-xl overflow-hidden flex items-center justify-center p-2">
-                  {/* Badge Overlay */}
                   {discountPercent && (
                     <span className="absolute top-1 left-1 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-2xs z-10">
                       {discountPercent}
@@ -123,37 +138,40 @@ export default function FlashDeals() {
                   )}
                 </div>
 
-                {/* Title */}
                 <h3 className="text-xs font-bold text-gray-900 line-clamp-2 leading-snug min-h-[32px]">
                   {product.name}
                 </h3>
               </div>
 
-              {/* Price Block */}
-              <div className="mt-2 pt-1">
-                <div className="text-sm font-extrabold text-primary leading-tight">
-                  {displayPrice}
+              <div className="mt-2 pt-1 flex items-end justify-between">
+                <div>
+                  <div className="text-sm font-extrabold text-primary leading-tight">
+                    {displayPrice}
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    {displayOriginalPrice && (
+                      <span className="text-[10px] text-gray-400 line-through font-medium">
+                        {displayOriginalPrice}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  {displayOriginalPrice && (
-                    <span className="text-[10px] text-gray-400 line-through font-medium">
-                      {displayOriginalPrice}
-                    </span>
-                  )}
-                  {discountPercent && (
-                    <span className="text-[10px] font-bold text-red-500">
-                      {discountPercent}
-                    </span>
-                  )}
-                </div>
+                
+                {/* Mobile Cart Button */}
+                <button
+                  className="bg-blue-50 text-primary hover:bg-primary hover:text-white w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer"
+                  onClick={(e) => handleAddToCart(e, product)}
+                >
+                  <ShoppingCart size={14} />
+                </button>
               </div>
-            </Link>
+            </div>
           );
         })}
       </div>
 
       {/* --- DESKTOP VIEW (>= md): Grid with Horizontal Cards --- */}
-      <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="hidden md:grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
         {hotDeals.map((product) => {
           const hasDiscount = product.originalPrice && product.originalPrice > product.price;
           const discountPercent = hasDiscount
@@ -168,20 +186,16 @@ export default function FlashDeals() {
           return (
             <div
               key={product.id}
-              className="relative bg-white rounded-2xl p-3.5 border border-gray-100 hover:border-primary/30 hover:shadow-md transition-all duration-200 flex items-center gap-3.5 group"
+              onClick={() => router.push(`/products/${product.id}`)}
+              className="relative bg-white rounded-2xl p-3.5 border border-gray-100 hover:border-primary/30 hover:shadow-md transition-all duration-200 flex items-center gap-3.5 group cursor-pointer"
             >
-              {/* Left Discount Badge */}
               {discountPercent && (
                 <span className="absolute top-2.5 left-2.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full z-10">
                   {discountPercent}
                 </span>
               )}
 
-              {/* Product Image Container */}
-              <Link
-                href={`/product/${product.id}`}
-                className="relative w-28 h-28 lg:w-32 lg:h-32 shrink-0 bg-slate-50/60 rounded-xl overflow-hidden p-2 flex items-center justify-center"
-              >
+              <div className="relative w-28 h-28 lg:w-32 lg:h-32 shrink-0 bg-slate-50/60 rounded-xl overflow-hidden p-2 flex items-center justify-center">
                 {product.images?.[0] ? (
                   <Image
                     src={product.images[0]}
@@ -194,16 +208,13 @@ export default function FlashDeals() {
                     No Image
                   </div>
                 )}
-              </Link>
+              </div>
 
-              {/* Product Details (Right Side) */}
               <div className="flex flex-col justify-between flex-1 min-w-0 h-full py-1">
                 <div>
-                  <Link href={`/product/${product.id}`}>
-                    <h3 className="text-xs lg:text-sm font-bold text-gray-900 truncate group-hover:text-primary transition-colors">
-                      {product.name}
-                    </h3>
-                  </Link>
+                  <h3 className="text-xs lg:text-sm font-bold text-gray-900 truncate group-hover:text-primary transition-colors">
+                    {product.name}
+                  </h3>
 
                   <div className="mt-2">
                     <div className="text-sm lg:text-base font-extrabold text-primary">
@@ -217,7 +228,6 @@ export default function FlashDeals() {
                   </div>
                 </div>
 
-                {/* Bottom Rating + Add to Cart Button */}
                 <div className="flex items-center justify-between mt-3">
                   <div className="flex items-center gap-1 text-[11px] text-gray-500 font-medium">
                     <Star size={12} className="fill-amber-400 text-amber-400" />
@@ -225,9 +235,11 @@ export default function FlashDeals() {
                     <span>(24)</span>
                   </div>
 
+                  {/* Desktop Cart Button */}
                   <button
                     className="bg-primary hover:bg-primary/90 text-white p-2 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer"
                     aria-label="Add to cart"
+                    onClick={(e) => handleAddToCart(e, product)}
                   >
                     <ShoppingCart size={15} />
                   </button>
@@ -237,7 +249,6 @@ export default function FlashDeals() {
           );
         })}
       </div>
-
     </section>
   );
 }

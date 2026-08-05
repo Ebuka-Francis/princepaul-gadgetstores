@@ -9,8 +9,8 @@ import FooterContainer from "@/components/footer/FooterContainer";
 export default function Home() {
   return (
     <>
-      <AnnouncementBar />
-      <Navbar />
+      {/* <AnnouncementBar /> */}
+      {/* <Navbar /> */}
 <HeroPage />
 <Container>
 <CategorySection />
@@ -22,3 +22,7 @@ export default function Home() {
   );
 
 }
+
+//  export default function Home() {
+//   return <h1>Hello World</h1>;
+// }

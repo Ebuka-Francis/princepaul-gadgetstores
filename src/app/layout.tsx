@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/context/AuthContext";
 import AuthModal from "@/components/auth/AuthModal";
 import "./globals.css";
+import CartDrawer from "@/components/cart/CartDrawer";
+import Navbar from "@/features/homepage/Navbar";
+import Footer from "@/components/footer/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,20 +24,23 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <AuthProvider>
-        <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col">
+        <AuthProvider>
+            <Navbar />
           {children}
-        <AuthModal />
-          </body>
-      </AuthProvider>
+             <Footer />
+          <CartDrawer />
+          <AuthModal />
+        </AuthProvider>
+      </body>
     </html>
   );
 }

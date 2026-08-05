@@ -102,18 +102,18 @@ export default function Footer() {
           <div className="lg:col-span-2 flex flex-col justify-between">
             <div className="space-y-4">
               <Link href="/" className="inline-flex items-center gap-2">
-                <div className="bg-white p-1.5 rounded-xl">
+                {/* <div className="bg-white p-1.5 rounded-xl"> */}
                   <Image
-                    src="/princepaulogo.png"
+                    src="/princepaullogowhite-r.png"
                     alt="PrincePaul"
-                    width={45}
-                    height={40}
-                    className="w-auto h-8 object-contain"
+                    width={70}
+                    height={70}
+                    className="w-auto h-auto object-contain"
                   />
-                </div>
-                <span className="text-xl font-extrabold text-white tracking-tight">
+                {/* </div> */}
+                {/* <span className="text-xl font-extrabold text-white tracking-tight">
                   Prince<span className="text-blue-500">Paul</span>
-                </span>
+                </span> */}
               </Link>
 
               <p className="text-xs sm:text-sm text-slate-400 max-w-sm leading-relaxed">
@@ -182,10 +182,10 @@ export default function Footer() {
               {[
                 { label: "Help Center & FAQs", href: "/help" },
                 { label: "Track Your Order", href: "/track-order" },
-                { label: "Return & Refund Policy", href: "/returns" },
-                { label: "Warranty Policy", href: "/warranty" },
-                { label: "Shipping & Delivery", href: "/shipping" },
-                { label: "Contact Us", href: "/contact" },
+                { label: "Return & Refund Policy", href: "/return-policy" },
+                { label: "Warranty Policy", href: "/warranty-policy" },
+                { label: "Shipping & Delivery", href: "/shipping-delivery" },
+                { label: "Contact Us", href: "/contact-us" },
               ].map((link, idx) => (
                 <li key={idx}>
                   <Link
@@ -266,7 +266,7 @@ export default function Footer() {
                 Privacy Policy
               </Link>
               <span>•</span>
-              <Link href="/terms-and-conditions" className="hover:text-blue-400 transition-colors">
+              <Link href="/terms-conditions" className="hover:text-blue-400 transition-colors">
                 Terms & Conditions
               </Link>
             </div>

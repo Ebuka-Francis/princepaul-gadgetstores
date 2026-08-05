@@ -42,33 +42,65 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const openAuthModal = () => setIsAuthModalOpen(true);
   const closeAuthModal = () => setIsAuthModalOpen(false);
 
+// useEffect(() => {
+//   const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+//     setUser(currentUser);
+
+//     if (currentUser) {
+//       try {
+//         const userDocRef = doc(db, "users", currentUser.uid);
+//         const userDoc = await getDoc(userDocRef);
+
+//         if (userDoc.exists() && userDoc.data()?.role === "admin") {
+//           setIsAdmin(true);
+//         } else {
+//           setIsAdmin(false);
+//         }
+//       } catch (err) {
+//         console.warn("Could not fetch admin status (offline/network issue):", err);
+//         setIsAdmin(false);
+//       }
+//     } else {
+//       setIsAdmin(false);
+//     }
+
+//     setLoading(false);
+//   });
+
+//   return () => unsubscribe();
+// }, []);
+
+async function loadAdminStatus(uid: string) {
+  try {
+    console.log("Checking admin status...");
+    const userDoc = await getDoc(doc(db, "users", uid));
+    console.log("Checking admin status...");
+    setIsAdmin(
+      userDoc.exists() &&
+      userDoc.data()?.role === "admin"
+    );
+  } catch (error) {
+    console.error("Admin check failed:", error);
+    setIsAdmin(false);
+  }
+}
+
 useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
     setUser(currentUser);
+    setLoading(false);
 
     if (currentUser) {
-      try {
-        const userDocRef = doc(db, "users", currentUser.uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (userDoc.exists() && userDoc.data()?.role === "admin") {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-        }
-      } catch (err) {
-        console.warn("Could not fetch admin status (offline/network issue):", err);
-        setIsAdmin(false);
-      }
+      loadAdminStatus(currentUser.uid);
     } else {
       setIsAdmin(false);
     }
-
-    setLoading(false);
   });
 
-  return () => unsubscribe();
+  return unsubscribe;
 }, []);
+
+
 
   const logout = () => signOut(auth);
 
