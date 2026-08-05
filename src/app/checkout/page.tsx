@@ -3,19 +3,32 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/useCartStore";
-import { usePaystackPayment } from "react-paystack";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { ShoppingBag, CreditCard, MessageSquare, ArrowLeft, Loader2 } from "lucide-react";
+import { ShoppingBag, MessageSquare, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
+
+// Dynamically import the button so it NEVER runs on the server/build worker
+const PaystackCheckoutButton = dynamic(
+  () => import("@/components/PaystackCheckoutButton"),
+  { ssr: false }
+);
+
+interface PaystackReference {
+  reference: string;
+  trxref: string;
+  message: string;
+  status: string;
+  [key: string]: unknown;
+}
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, getSubtotal, clearCart } = useCartStore();
   const subtotal = getSubtotal();
 
-  // Form state
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -30,21 +43,9 @@ export default function CheckoutPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 1. Paystack Configuration
-  const paystackConfig = {
-    reference: (new Date()).getTime().toString(),
-    email: formData.email || "customer@example.com",
-    amount: subtotal * 100, // Paystack expects amount in kobo/cents
-    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
-  };
-
-  const initializePaystack = usePaystackPayment(paystackConfig);
-
-  // Success handler for Paystack
- const handlePaystackSuccess = async (reference: { reference: string; trxref: string; message: string; status: string }) => {
+  const handlePaystackSuccess = async (reference: PaystackReference) => {
     try {
       setLoading(true);
-      // Save order to Firestore
       await addDoc(collection(db, "orders"), {
         customer: formData,
         items: cart,
@@ -69,23 +70,13 @@ export default function CheckoutPage() {
     alert("Payment window closed.");
   };
 
-  const handleSubmitPayment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.phone || !formData.address) {
-      alert("Please fill in all delivery details before proceeding.");
-      return;
-    }
-    initializePaystack({ onSuccess: handlePaystackSuccess, onClose: handlePaystackClose });
-  };
-
-  // 2. WhatsApp Checkout Handler
   const handleWhatsAppCheckout = () => {
     if (!formData.name || !formData.phone) {
       alert("Please enter at least your Name and Phone number for WhatsApp orders.");
       return;
     }
 
-    const dealerPhoneNumber = "08133842387"; // Replace with the dealer's actual WhatsApp phone number
+    const dealerPhoneNumber = "08133842387";
     
     let message = `*New Order Request*%0A%0A`;
     message += `*Customer Details:*%0A`;
@@ -117,6 +108,8 @@ export default function CheckoutPage() {
     );
   }
 
+  const isFormValid = Boolean(formData.name && formData.email && formData.phone && formData.address);
+
   return (
     <div className="min-h-screen bg-[#F8F9FA] py-10 font-sans">
       <div className="max-w-[1200px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -130,7 +123,7 @@ export default function CheckoutPage() {
           <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-4">
             <h1 className="text-lg font-bold text-gray-900">Delivery Information</h1>
             
-            <form onSubmit={handleSubmitPayment} className="space-y-4">
+            <div className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">Full Name</label>
                 <input 
@@ -195,7 +188,7 @@ export default function CheckoutPage() {
                   className="w-full px-4 py-2.5 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-blue-700" 
                 />
               </div>
-            </form>
+            </div>
           </div>
         </div>
 
@@ -210,11 +203,11 @@ export default function CheckoutPage() {
                   <div className="flex items-center gap-2 truncate">
                     <div className="w-10 h-10 relative bg-gray-50 rounded-lg overflow-hidden shrink-0 border">
                       <Image
-  src={item.image || "/placeholder.jpg"}
-  alt={item.name}
-  fill
-  className="object-contain p-1"
-/>
+                        src={item.image || "/placeholder.jpg"}
+                        alt={item.name}
+                        fill
+                        className="object-contain p-1"
+                      />
                     </div>
                     <span className="font-semibold text-gray-800 truncate max-w-[150px]">{item.name} (x{item.quantity})</span>
                   </div>
@@ -232,15 +225,15 @@ export default function CheckoutPage() {
 
             {/* Action Buttons */}
             <div className="space-y-3 pt-2">
-              <button
-                type="button"
-                onClick={handleSubmitPayment}
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-700/20 transition-all cursor-pointer disabled:opacity-50"
-              >
-                {loading ? <Loader2 className="animate-spin" size={16} /> : <CreditCard size={16} />}
-                <span>Pay Online with Paystack</span>
-              </button>
+              <PaystackCheckoutButton
+                email={formData.email}
+                amount={subtotal}
+                publicKey={process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || ""}
+                onSuccess={handlePaystackSuccess}
+                onClose={handlePaystackClose}
+                loading={loading}
+                disabled={!isFormValid}
+              />
 
               <button
                 type="button"
