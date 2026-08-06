@@ -66,9 +66,9 @@ export default function CategorySection() {
           className="text-xs lg:text-sm font-semibold text-primary hover:underline transition-all flex items-center gap-1"
         >
           {/* "View all" on Mobile, "View all categories ->" on Desktop */}
-          <span className="md:hidden">View all</span>
-          <span className="hidden md:inline">View all categories</span>
-          <ArrowRight size={14} className="hidden md:inline lg:w-4 lg:h-4" />
+          {/* <span className="md:hidden">View all</span>
+          <span className="hidden md:inline">View all categories</span> */}
+          {/* <ArrowRight size={14} className="hidden md:inline lg:w-4 lg:h-4" /> */}
         </Link>
       </div>
 

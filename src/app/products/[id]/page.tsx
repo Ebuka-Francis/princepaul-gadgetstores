@@ -66,13 +66,18 @@ export default function ProductDetailsPage({
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState("Description");
 
+  // Global Flash Sale Timer State managed from Dashboard settings
+  const [flashSaleEndTime, setFlashSaleEndTime] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
+
   const addToCart = useCartStore((state) => state.addToCart);
   const cartItems = useCartStore((state) => state.cart);
   const cartCount = cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0);
 
   useEffect(() => {
-    const fetchProductAndRelated = async () => {
+    const fetchProductAndSettings = async () => {
       try {
+        // 1. Fetch Product details
         const docRef = doc(db, "products", productId);
         const docSnap = await getDoc(docRef);
 
@@ -104,15 +109,55 @@ export default function ProductDetailsPage({
             setRelatedProducts(list.slice(0, 4));
           }
         }
+
+        // 2. Fetch Global Flash Sale Countdown from Dashboard Settings (e.g., collection "settings", doc "flashSale")
+        const settingsRef = doc(db, "settings", "flashSale");
+        const settingsSnap = await getDoc(settingsRef);
+        if (settingsSnap.exists()) {
+          const settingsData = settingsSnap.data();
+          if (settingsData?.endTime) {
+            // Can be a Firestore timestamp or ISO string
+            const target = settingsData.endTime?.seconds 
+              ? settingsData.endTime.seconds * 1000 
+              : new Date(settingsData.endTime).getTime();
+            setFlashSaleEndTime(target);
+          }
+        }
       } catch (err) {
-        console.error("Error fetching product details:", err);
+        console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProductAndRelated();
+    fetchProductAndSettings();
   }, [productId]);
+
+  // Live Global Countdown Tick effect
+  useEffect(() => {
+    if (!flashSaleEndTime) return;
+
+    const updateTimer = () => {
+      const now = new Date().getTime();
+      const difference = flashSaleEndTime - now;
+
+      if (difference <= 0) {
+        setTimeLeft({ days: 0, hours: 0, mins: 0, secs: 0 });
+        return;
+      }
+
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const mins = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((difference % (1000 * 60)) / 1000);
+
+      setTimeLeft({ days, hours, mins, secs });
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [flashSaleEndTime]);
 
   if (loading) {
     return (
@@ -258,20 +303,49 @@ export default function ProductDetailsPage({
           <div className="lg:col-span-5 bg-white rounded-2xl p-8 shadow-sm border border-gray-100 flex flex-col">
             <div className="space-y-6">
               
-              <div className="space-y-3">
-                <span className="inline-block bg-[#FF5B5B] text-white text-[11px] font-bold px-3 py-1 rounded-full">
-                  {product.badge || "Hot Deal"}
-                </span>
+              <div className="space-y-3 flex items-start justify-between">
+                <div>
+                  <span className="inline-block bg-[#FF5B5B] text-white text-[11px] font-bold px-3 py-1 rounded-full">
+                    {product.badge || "Hot Deal"}
+                  </span>
 
-                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">
-                  {product.name}
-                </h1>
+                  <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight mt-2">
+                    {product.name}
+                  </h1>
 
-                <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                  <Star size={16} className="fill-[#FFB800] text-[#FFB800]" />
-                  <span className="font-bold text-gray-800">{product.rating || "4.9"}</span>
-                  <span>({product.reviewsCount || "128"} reviews)</span>
+                  <div className="flex items-center gap-1.5 text-sm text-gray-500 mt-2">
+                    <Star size={16} className="fill-[#FFB800] text-[#FFB800]" />
+                    <span className="font-bold text-gray-800">{product.rating || "4.9"}</span>
+                    <span>({product.reviewsCount || "128"} reviews)</span>
+                  </div>
                 </div>
+
+                {/* Dashboard-Controlled Global Flash Sale Timer */}
+                {flashSaleEndTime && (
+                  <div className="hidden lg:flex flex-col items-end gap-1 text-xs text-gray-600 font-medium">
+                    <span>Ending in:</span>
+                    <div className="flex items-center gap-1">
+                      {[
+                        { val: String(timeLeft.days).padStart(2, '0'), label: "Days" },
+                        { val: String(timeLeft.hours).padStart(2, '0'), label: "Hours" },
+                        { val: String(timeLeft.mins).padStart(2, '0'), label: "Mins" },
+                        { val: String(timeLeft.secs).padStart(2, '0'), label: "Secs" },
+                      ].map((time, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-white border border-gray-200 rounded-lg px-2 py-1 flex flex-col items-center min-w-[34px] shadow-2xs"
+                        >
+                          <span className="font-bold text-gray-900 text-xs leading-none">
+                            {time.val}
+                          </span>
+                          <span className="text-[8px] text-gray-400 scale-90">
+                            {time.label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-4 flex-wrap">

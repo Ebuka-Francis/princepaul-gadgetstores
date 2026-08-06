@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import {
   PackagePlus,
@@ -15,6 +15,10 @@ import {
   Store,
   LucideIcon,
   Loader2,
+  Clock,
+  X,
+  CheckCircle2,
+  Zap,
 } from "lucide-react";
 
 import AddProductForm from "@/components/admin/AddProductForm";
@@ -41,6 +45,13 @@ const TABS: TabItem[] = [
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+  const [isFlashTimerOpen, setIsFlashTimerOpen] = useState(false);
+
+  // Flash Sale Timer State
+  const [endTime, setEndTime] = useState("");
+  const [savingTimer, setSavingTimer] = useState(false);
+  const [timerSuccess, setTimerSuccess] = useState(false);
+  const [loadingTimer, setLoadingTimer] = useState(false);
 
   // Live Metrics State
   const [metrics, setMetrics] = useState({
@@ -51,6 +62,61 @@ export default function AdminDashboard() {
     totalUsers: 0,
   });
   const [loadingMetrics, setLoadingMetrics] = useState(true);
+
+  // Fetch current Flash Sale Timer on load
+  useEffect(() => {
+    const fetchFlashTimer = async () => {
+      setLoadingTimer(true);
+      try {
+        const docRef = doc(db, "settings", "flashSale");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data?.endTime) {
+            const dateObj = data.endTime?.seconds 
+              ? new Date(data.endTime.seconds * 1000) 
+              : new Date(data.endTime);
+            const formatted = dateObj.toISOString().slice(0, 16);
+            setEndTime(formatted);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching timer settings:", err);
+      } finally {
+        setLoadingTimer(false);
+      }
+    };
+
+    fetchFlashTimer();
+  }, []);
+
+  // Save Flash Sale Timer Handler
+  const handleSaveFlashTimer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!endTime) return;
+
+    setSavingTimer(true);
+    setTimerSuccess(false);
+
+    try {
+      const targetDate = new Date(endTime);
+      await setDoc(doc(db, "settings", "flashSale"), {
+        endTime: targetDate.toISOString(),
+        updatedAt: new Date(),
+      }, { merge: true });
+
+      setTimerSuccess(true);
+      setTimeout(() => {
+        setTimerSuccess(false);
+        setIsFlashTimerOpen(false);
+      }, 2000);
+    } catch (err) {
+      console.error("Error saving timer:", err);
+      alert("Failed to update timer");
+    } finally {
+      setSavingTimer(false);
+    }
+  };
 
   // Fetch Live Metrics
   useEffect(() => {
@@ -136,7 +202,7 @@ export default function AdminDashboard() {
           </Link>
         </div>
 
-        {/* Title & Add Product Trigger */}
+        {/* Title & Action Buttons */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
@@ -147,13 +213,25 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          <button
-            onClick={() => setIsAddProductOpen(true)}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95 shrink-0 cursor-pointer"
-          >
-            <PackagePlus size={18} />
-            <span>Add New Product</span>
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Flash Deals Timer Button */}
+            <button
+              onClick={() => setIsFlashTimerOpen(true)}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 border border-amber-500/30 text-amber-400 hover:text-amber-300 text-xs sm:text-sm font-bold rounded-xl transition-all active:scale-95 shrink-0 cursor-pointer"
+            >
+              <Clock size={16} />
+              <span>Flash Deals Timer</span>
+            </button>
+
+            {/* Add New Product Button */}
+            <button
+              onClick={() => setIsAddProductOpen(true)}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95 shrink-0 cursor-pointer"
+            >
+              <PackagePlus size={18} />
+              <span>Add New Product</span>
+            </button>
+          </div>
         </div>
 
         {/* Dynamic Metric Cards */}
@@ -264,6 +342,85 @@ export default function AdminDashboard() {
         isOpen={isAddProductOpen}
         onClose={() => setIsAddProductOpen(false)}
       />
+
+      {/* Flash Deals Timer Settings Modal */}
+      {isFlashTimerOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative space-y-6">
+            
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                  <Zap size={20} className="fill-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">Flash Deals Campaign Timer</h3>
+                  <p className="text-xs text-slate-400">Set expiration for homepage deals.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsFlashTimerOpen(false)}
+                className="text-slate-400 hover:text-white p-1.5 rounded-lg bg-slate-800/50 hover:bg-slate-800 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {loadingTimer ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-amber-400" />
+              </div>
+            ) : (
+              <form onSubmit={handleSaveFlashTimer} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-2 flex items-center gap-1.5">
+                    <Clock size={14} className="text-amber-400" />
+                    Expiration Date & Time
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    required
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 transition-all"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pt-2">
+                  {timerSuccess ? (
+                    <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1">
+                      <CheckCircle2 size={14} /> Timer updated!
+                    </span>
+                  ) : (
+                    <span className="text-[11px] text-slate-500">
+                      Syncs automatically to homepage.
+                    </span>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsFlashTimerOpen(false)}
+                      className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={savingTimer}
+                      className="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold rounded-xl transition-all disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                    >
+                      {savingTimer && <Loader2 size={14} className="animate-spin" />}
+                      Save Timer
+                    </button>
+                  </div>
+                </div>
+              </form>
+            )}
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }

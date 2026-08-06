@@ -31,7 +31,7 @@ const features = [
 
 export default function TrustFeatures() {
   return (
-    <div className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-3 sm:p-4 lg:py-5 lg:px-6 my-4 lg:my-6">
+    <div className=" w-full relative -mt-15 sm:mt-0 bg-white rounded-2xl border border-gray-100 shadow-sm p-3 sm:p-4 lg:py-5 lg:px-6 my-4 lg:my-6">
       {/* Mobile: 4-column grid with vertical dividers | Desktop: 5-column grid */}
       <div className="grid grid-cols-4 lg:grid-cols-5 divide-x divide-gray-100">
         {features.map((feature, index) => {

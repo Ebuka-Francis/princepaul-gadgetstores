@@ -60,13 +60,13 @@ export default function HeroSlider() {
       
       {/* 1. Mobile-Only Search Input (Matches Mobile Mockup Top Card) */}
       <div className="block lg:hidden w-full">
-        <div className="flex h-11 items-center overflow-hidden rounded-xl border border-gray-200 bg-white px-3 shadow-sm focus-within:border-primary">
+        <div className="flex h-11 items-center overflow-hidden rounded-xl border border-gray-200 bg-transparent px-3 shadow-sm focus-within:border-primary">
           <input
-            className="w-full text-xs text-gray-800 outline-none placeholder:text-gray-400"
+            className="w-full text-xs  text-gray-800 outline-none placeholder:text-gray-400"
             placeholder="Search for gadgets, brands..."
           />
           <button className="text-primary p-1">
-            <Search size={18} />
+            <Search className="text-white" size={18} />
           </button>
         </div>
       </div>
