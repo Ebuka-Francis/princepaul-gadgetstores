@@ -6,7 +6,9 @@ import {
   onAuthStateChanged, 
   signOut, 
   GoogleAuthProvider, 
-  signInWithPopup 
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult
 } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
@@ -42,71 +44,66 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const openAuthModal = () => setIsAuthModalOpen(true);
   const closeAuthModal = () => setIsAuthModalOpen(false);
 
-// useEffect(() => {
-//   const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-//     setUser(currentUser);
-
-//     if (currentUser) {
-//       try {
-//         const userDocRef = doc(db, "users", currentUser.uid);
-//         const userDoc = await getDoc(userDocRef);
-
-//         if (userDoc.exists() && userDoc.data()?.role === "admin") {
-//           setIsAdmin(true);
-//         } else {
-//           setIsAdmin(false);
-//         }
-//       } catch (err) {
-//         console.warn("Could not fetch admin status (offline/network issue):", err);
-//         setIsAdmin(false);
-//       }
-//     } else {
-//       setIsAdmin(false);
-//     }
-
-//     setLoading(false);
-//   });
-
-//   return () => unsubscribe();
-// }, []);
-
-async function loadAdminStatus(uid: string) {
-  try {
-    console.log("Checking admin status...");
-    const userDoc = await getDoc(doc(db, "users", uid));
-    console.log("Checking admin status...");
-    setIsAdmin(
-      userDoc.exists() &&
-      userDoc.data()?.role === "admin"
-    );
-  } catch (error) {
-    console.error("Admin check failed:", error);
-    setIsAdmin(false);
-  }
-}
-
-useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-    setUser(currentUser);
-    setLoading(false);
-
-    if (currentUser) {
-      loadAdminStatus(currentUser.uid);
-    } else {
+  async function loadAdminStatus(uid: string) {
+    try {
+      const userDoc = await getDoc(doc(db, "users", uid));
+      setIsAdmin(
+        userDoc.exists() &&
+        userDoc.data()?.role === "admin"
+      );
+    } catch (error) {
+      console.error("Admin check failed:", error);
       setIsAdmin(false);
     }
-  });
+  }
 
-  return unsubscribe;
-}, []);
+  // Handle redirect result when user returns from Google mobile login
+  useEffect(() => {
+    getRedirectResult(auth).catch((error) => {
+      console.error("Redirect sign-in error:", error);
+    });
+  }, []);
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
 
+      if (currentUser) {
+        loadAdminStatus(currentUser.uid);
+      } else {
+        setIsAdmin(false);
+      }
+    });
+
+    return unsubscribe;
+  }, []);
 
   const logout = () => signOut(auth);
 
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    
+    // Detect if the user is on a mobile browser to prevent popup blocks
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+
+    try {
+      if (isMobile) {
+        await signInWithRedirect(auth, provider);
+      } else {
+        await signInWithPopup(auth, provider);
+        closeAuthModal(); // Close modal automatically on desktop success
+      }
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      if (err.code === "auth/popup-closed-by-user") {
+        console.log("The sign-in popup was closed before completing.");
+      } else {
+        console.error("Google Auth Error:", err.message || err);
+      }
+    }
   };
 
   return (

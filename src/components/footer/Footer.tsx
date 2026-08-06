@@ -231,9 +231,9 @@ export default function Footer() {
               </h4>
               <div className="flex items-center gap-2">
                 {[
-                  { icon: FaTiktok, href: "#" },
-                  { icon: FaInstagram, href: "#" },
-                  { icon: FaFacebookF, href: "#" },
+                  { icon: FaTiktok, href:"https://www.tiktok.com/@pp_tech0" },
+                  { icon: FaInstagram, href: "https://www.instagram.com/pp_tech_ng/" },
+                  { icon: FaFacebookF, href: "https://web.facebook.com/profile.php?id=100064082623693" },
                 ].map((social, idx) => {
                   const Icon = social.icon;
                   return (

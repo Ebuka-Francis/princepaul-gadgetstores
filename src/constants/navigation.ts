@@ -5,30 +5,26 @@ export const navigation = [
   },
   {
     name: "Phones",
-    href: "/phones",
+    href: "/category/Smartphones & Tablets",
   },
   {
     name: "Laptops",
-    href: "/laptops",
+    href: "/category/laptops",
   },
   {
     name: "Gaming",
-    href: "/gaming",
+    href: "/category/gaming",
   },
   {
     name: "Accessories",
-    href: "/accessories",
+    href: "/category/accessories",
   },
   {
     name: "Smart Gadgets",
-    href: "/smart-gadgets",
-  },
-  {
-    name: "Other Devices",
-    href: "/devices",
+    href: "/category/smart-gadgets",
   },
   // {
-  //   name: "Deals",
-  //   href: "/deals",
+  //   name: "Other Devices",
+  //   href: "/category/devices",
   // },
 ];

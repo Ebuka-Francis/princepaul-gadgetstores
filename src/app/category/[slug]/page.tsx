@@ -79,7 +79,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] pb-12 font-sans">
-        <Navbar />
+        {/* <Navbar /> */}
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-8 space-y-8">
         {/* Breadcrumb & Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-gray-200 pb-6">

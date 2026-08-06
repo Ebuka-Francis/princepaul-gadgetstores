@@ -4,7 +4,7 @@ import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, query, where, limit, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useCartStore, CartItem } from "@/store/useCartStore";
 import Navbar from "@/features/homepage/Navbar";
@@ -43,6 +43,7 @@ export interface ProductDetail {
   images?: string[];
   imageUrl?: string;
   stock?: number;
+  category?: string;
   storageOptions?: string[];
   colors?: { name: string; hex: string }[];
 }
@@ -57,6 +58,7 @@ export default function ProductDetailsPage({
   const router = useRouter();
 
   const [product, setProduct] = useState<ProductDetail | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<ProductDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [selectedStorage, setSelectedStorage] = useState<string>("");
@@ -69,7 +71,7 @@ export default function ProductDetailsPage({
   const cartCount = cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0);
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchProductAndRelated = async () => {
       try {
         const docRef = doc(db, "products", productId);
         const docSnap = await getDoc(docRef);
@@ -84,15 +86,32 @@ export default function ProductDetailsPage({
           if (data.colors && data.colors.length > 0) {
             setSelectedColor(data.colors[0]);
           }
+
+          // Fetch related products under the same category
+          if (data.category) {
+            const q = query(
+              collection(db, "products"),
+              where("category", "==", data.category),
+              limit(5)
+            );
+            const querySnapshot = await getDocs(q);
+            const list: ProductDetail[] = [];
+            querySnapshot.forEach((d) => {
+              if (d.id !== productId) {
+                list.push({ id: d.id, ...d.data() } as ProductDetail);
+              }
+            });
+            setRelatedProducts(list.slice(0, 4));
+          }
         }
       } catch (err) {
-        console.error("Error fetching product:", err);
+        console.error("Error fetching product details:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProduct();
+    fetchProductAndRelated();
   }, [productId]);
 
   if (loading) {
@@ -157,7 +176,7 @@ export default function ProductDetailsPage({
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-900 pb-12 font-sans">
-      <Navbar />
+      {/* <Navbar /> */}
       {/* --- TOP NAVBAR --- */}
    
 
@@ -255,7 +274,7 @@ export default function ProductDetailsPage({
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 flex-wrap">
                 <span className="text-3xl font-extrabold text-[#0044FF]">
                   ₦{(product.price || 1250000).toLocaleString()}
                 </span>
@@ -385,17 +404,17 @@ export default function ProductDetailsPage({
           </div>
         </div>
 
-        {/* --- BOTTOM SECTION (Tabs + Related) --- */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
           {/* Tabs Section */}
           <div className="lg:col-span-7 bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-8 border-b border-gray-100 pb-4">
+            {/* Added scroll overflow wrapper for mobile */}
+            <div className="flex items-center gap-8 border-b border-gray-100 pb-4 overflow-x-auto no-scrollbar">
               {['Description', 'Specifications', 'Reviews (128)', 'Shipping & Delivery'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`text-sm font-semibold pb-4 -mb-4 relative ${
+                  className={`text-sm font-semibold pb-4 -mb-4 relative whitespace-nowrap shrink-0 ${
                     activeTab === tab ? "text-[#0044FF]" : "text-gray-500 hover:text-gray-900"
                   }`}
                 >
@@ -409,33 +428,47 @@ export default function ProductDetailsPage({
 
             <div className="pt-8 space-y-6">
               {activeTab === 'Description' && (
-                <>
-                  <div className="text-sm text-gray-700 leading-relaxed space-y-4">
-                    <p className="font-medium text-gray-900">{product.name}. The ultimate iPhone.</p>
-                    <p>
-                      {product.description || "A magical new way to interact with iPhone. Groundbreaking safety features designed to save lives. An innovative 48MP camera for stunning detail. All powered by the ultimate smartphone chip."}
+                <div className="space-y-6 text-sm text-gray-700 leading-relaxed">
+                  
+                  {/* Main Intro Highlight */}
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <p className="font-bold text-gray-900 text-base mb-1">{product.name}</p>
+                    <p className="text-gray-600">
+                      {product.description || "Experience the next level of performance, sleek design, and advanced capabilities built for everyday excellence."}
                     </p>
                   </div>
-                  
-                  {/* <div className="flex flex-wrap items-center gap-6 pt-4 text-xs text-gray-500 font-medium">
-                    <div className="flex items-center gap-2">
-                      <Smartphone size={18} className="text-gray-400" />
-                      <span>6.7-inch Super Retina XDR display</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Cpu size={18} className="text-gray-400" />
-                      <span>A16 Bionic chip</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Camera size={18} className="text-gray-400" />
-                      <span>48MP Main camera</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Battery size={18} className="text-gray-400" />
-                      <span>Up to 29 hours video playback</span>
-                    </div>
-                  </div> */}
-                </>
+
+                  {/* Key Features Section (Simulating Jumia's structured spec highlights) */}
+                  <div className="space-y-3">
+                    <h4 className="font-bold text-gray-900 uppercase tracking-wider text-xs text-[#0044FF]">
+                      Key Features & Highlights
+                    </h4>
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {[
+                        "Original factory unlocked device",
+                        "High-capacity battery health guarantee",
+                        "Advanced multi-lens camera system",
+                        "Comes with standard accessories in box"
+                      ].map((feature, i) => (
+                        <li key={i} className="flex items-start gap-2 bg-white p-2.5 rounded-lg border border-gray-100 shadow-2xs">
+                          <span className="text-[#0044FF] font-bold">✓</span>
+                          <span className="text-gray-700 font-medium">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Detailed Paragraph Section */}
+                  <div className="space-y-3 pt-2">
+                    <h4 className="font-bold text-gray-900 uppercase tracking-wider text-xs text-[#0044FF]">
+                      Product Overview
+                    </h4>
+                    <p className="text-gray-600 leading-relaxed">
+                      Designed to deliver optimal speed and long-lasting durability, this gadget integrates cutting-edge software with premium hardware build quality. Whether for professional multitasking, media consumption, or capturing memorable moments, it handles every task seamlessly.
+                    </p>
+                  </div>
+
+                </div>
               )}
               {activeTab !== 'Description' && (
                 <div className="text-sm text-gray-500">Content for {activeTab} will go here.</div>
@@ -443,37 +476,52 @@ export default function ProductDetailsPage({
             </div>
           </div>
 
-          {/* Related Products */}
+          {/* Related Products from the same category */}
           <div className="lg:col-span-5 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-base font-bold text-gray-900">You may also like</h3>
-              <button className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-gray-100">
+              <h3 className="text-base font-bold text-gray-900">
+                More in {product.category || "this category"}
+              </h3>
+              <Link 
+                href={`/category/${product.category?.toLowerCase() || ''}`} 
+                className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-gray-100 cursor-pointer"
+              >
                 <ChevronRight size={16} />
-              </button>
+              </Link>
             </div>
             
             <div className="grid grid-cols-4 gap-3">
-              {/* Dummy Related Products mapping exact visual details */}
-              {[
-                { name: "iPhone 14 Pro 128GB", price: 1080000, img: "/placeholder.jpg" },
-                { name: "iPhone 13 Pro Max 256GB", price: 930000, img: "/placeholder.jpg" },
-                { name: "iPhone 15 Pro 256GB", price: 1620000, img: "/placeholder.jpg" },
-                { name: "iPhone 14 128GB", price: 780000, img: "/placeholder.jpg" },
-              ].map((item, idx) => (
-                <div key={idx} className="flex flex-col gap-2 cursor-pointer group">
-                  <div className="bg-gray-50 rounded-xl p-3 aspect-square flex items-center justify-center relative overflow-hidden">
-                    <Image src={product.images?.[0] || item.img} alt={item.name} fill className="object-contain p-2 mix-blend-multiply group-hover:scale-105 transition-transform" />
-                  </div>
-                  <div>
-                    <h4 className="text-[11px] font-medium text-gray-800 line-clamp-1">{item.name}</h4>
-                    <p className="text-xs font-bold text-[#0044FF] mt-0.5">₦{item.price.toLocaleString()}</p>
-                  </div>
+              {relatedProducts.length > 0 ? (
+                relatedProducts.map((item) => (
+                  <Link 
+                    key={item.id} 
+                    href={`/product/${item.id}`} 
+                    className="flex flex-col gap-2 cursor-pointer group"
+                  >
+                    <div className="bg-gray-50 rounded-xl p-3 aspect-square flex items-center justify-center relative overflow-hidden">
+                      <Image 
+                        src={item.images?.[0] || item.imageUrl || "/placeholder.jpg"} 
+                        alt={item.name} 
+                        fill 
+                        className="object-contain p-2 mix-blend-multiply group-hover:scale-105 transition-transform" 
+                      />
+                    </div>
+                    <div>
+                      <h4 className="text-[11px] font-medium text-gray-800 line-clamp-1">{item.name}</h4>
+                      <p className="text-xs font-bold text-[#0044FF] mt-0.5">₦{item.price?.toLocaleString()}</p>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="col-span-4 text-center py-4 text-xs text-gray-400">
+                  No related products found in this category.
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
         </div>
+
       </div>
     </div>
   );

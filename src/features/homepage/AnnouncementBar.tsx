@@ -41,13 +41,13 @@ export default function AnnouncementBar() {
           </div>
 
           <div className="flex items-center gap-3 pl-4 border-l border-white/30">
-            <a href="#" aria-label="Instagram" className="hover:text-white/80">
+            <a href="https://www.instagram.com/pp_tech_ng/" target="_blank" aria-label="Instagram" className="hover:text-white/80">
               <FaInstagram size={14} />
             </a>
-            <a href="#" aria-label="Facebook" className="hover:text-white/80">
+            <a href="https://web.facebook.com/profile.php?id=100064082623693" target="_blank" aria-label="Facebook" className="hover:text-white/80">
               <FaFacebookF size={14} />
             </a>
-            <a href="#" aria-label="TikTok" className="hover:text-white/80">
+            <a href="https://www.tiktok.com/@pp_tech0" target="_blank" aria-label="TikTok" className="hover:text-white/80">
               <FaTiktok size={14} />
             </a>
           </div>

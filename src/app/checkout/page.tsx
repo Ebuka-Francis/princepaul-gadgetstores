@@ -76,7 +76,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    const dealerPhoneNumber = "08133842387";
+    const dealerPhoneNumber = "09044560565";
     
     let message = `*New Order Request*%0A%0A`;
     message += `*Customer Details:*%0A`;

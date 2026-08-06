@@ -43,14 +43,14 @@ const categories = [
     image: "/smart-gadgets.jpg",
     href: "/category/smart-gadgets",
   },
-  {
-    id: "other-devices",
-    name: "Other Devices",
-    shortName: "Others",
-    count: "100+ products",
-    image: "/other-devices.jpg",
-    href: "/category/other-devices",
-  },
+  // {
+  //   id: "other-devices",
+  //   name: "Other Devices",
+  //   shortName: "Others",
+  //   count: "100+ products",
+  //   image: "/other-devices.jpg",
+  //   href: "/category/other-devices",
+  // },
 ];
 
 export default function CategorySection() {
