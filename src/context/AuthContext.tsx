@@ -58,53 +58,77 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   // Handle redirect result when user returns from Google mobile login
-  useEffect(() => {
-    getRedirectResult(auth).catch((error) => {
-      console.error("Redirect sign-in error:", error);
-    });
-  }, []);
+// Handle redirect result when user returns from Google mobile login
+useEffect(() => {
+  const handleRedirectResult = async () => {
+    try {
+      const result = await getRedirectResult(auth);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
+      if (result?.user) {
+        console.log("Google redirect successful:", result.user.email);
 
-      if (currentUser) {
-        loadAdminStatus(currentUser.uid);
-      } else {
-        setIsAdmin(false);
+        setUser(result.user);
+
+        await loadAdminStatus(result.user.uid);
+
+        closeAuthModal();
       }
-    });
+    } catch (error) {
+      console.error("Redirect sign-in error:", error);
+    }
+  };
 
-    return unsubscribe;
-  }, []);
+  handleRedirectResult();
+}, []);
+
+ useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    console.log("AUTH STATE:", currentUser);
+
+    setUser(currentUser);
+    setLoading(false);
+
+    if (currentUser) {
+      await loadAdminStatus(currentUser.uid);
+    } else {
+      setIsAdmin(false);
+    }
+  });
+
+  return unsubscribe;
+}, []);
 
   const logout = () => signOut(auth);
 
-  const loginWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    
-    // Detect if the user is on a mobile browser to prevent popup blocks
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+const loginWithGoogle = async () => {
+  const provider = new GoogleAuthProvider();
+
+  provider.setCustomParameters({
+    prompt: "select_account",
+  });
+
+  const isMobile =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent
     );
 
-    try {
-      if (isMobile) {
-        await signInWithRedirect(auth, provider);
-      } else {
-        await signInWithPopup(auth, provider);
-        closeAuthModal(); // Close modal automatically on desktop success
-      }
-    } catch (error: unknown) {
-      const err = error as { code?: string; message?: string };
-      if (err.code === "auth/popup-closed-by-user") {
-        console.log("The sign-in popup was closed before completing.");
-      } else {
-        console.error("Google Auth Error:", err.message || err);
-      }
+  try {
+    if (isMobile) {
+      await signInWithRedirect(auth, provider);
+    } else {
+      await signInWithPopup(auth, provider);
+      closeAuthModal();
     }
-  };
+  } catch (error: unknown) {
+    const err = error as { code?: string; message?: string };
+
+    if (err.code === "auth/popup-closed-by-user") {
+      console.log("The sign-in popup was closed before completing.");
+    } else {
+      console.error("Google Auth Error:", err.message || err);
+    }
+  }
+};
 
   return (
     <AuthContext.Provider
