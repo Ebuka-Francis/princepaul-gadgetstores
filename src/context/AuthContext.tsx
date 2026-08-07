@@ -57,78 +57,69 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  // Handle redirect result when user returns from Google mobile login
-// Handle redirect result when user returns from Google mobile login
-useEffect(() => {
-  const handleRedirectResult = async () => {
-    try {
-      const result = await getRedirectResult(auth);
+  // Handle redirect result properly on mount and ensure loading stays true until resolved
+  useEffect(() => {
+    let isMounted = true;
 
-      if (result?.user) {
-        console.log("Google redirect successful:", result.user.email);
-
-        setUser(result.user);
-
-        await loadAdminStatus(result.user.uid);
-
-        closeAuthModal();
+    const handleRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result?.user && isMounted) {
+          setUser(result.user);
+          loadAdminStatus(result.user.uid);
+        }
+      } catch (error) {
+        console.error("Redirect sign-in error:", error);
       }
-    } catch (error) {
-      console.error("Redirect sign-in error:", error);
-    }
-  };
+    };
 
-  handleRedirectResult();
-}, []);
+    handleRedirect();
 
- useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-    console.log("AUTH STATE:", currentUser);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (isMounted) {
+        setUser(currentUser);
+        setLoading(false);
 
-    setUser(currentUser);
-    setLoading(false);
+        if (currentUser) {
+          loadAdminStatus(currentUser.uid);
+        } else {
+          setIsAdmin(false);
+        }
+      }
+    });
 
-    if (currentUser) {
-      await loadAdminStatus(currentUser.uid);
-    } else {
-      setIsAdmin(false);
-    }
-  });
-
-  return unsubscribe;
-}, []);
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, []);
 
   const logout = () => signOut(auth);
 
-const loginWithGoogle = async () => {
-  const provider = new GoogleAuthProvider();
-
-  provider.setCustomParameters({
-    prompt: "select_account",
-  });
-
-  const isMobile =
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+  const loginWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent
     );
 
-  try {
-    if (isMobile) {
-      await signInWithRedirect(auth, provider);
-    } else {
-      await signInWithPopup(auth, provider);
-      closeAuthModal();
+    try {
+      if (isMobile) {
+        // This will redirect the page away, saving session state in IndexedDB/LocalStorage
+        await signInWithRedirect(auth, provider);
+      } else {
+        await signInWithPopup(auth, provider);
+        closeAuthModal();
+      }
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      if (err.code === "auth/popup-closed-by-user") {
+        console.log("The sign-in popup was closed before completing.");
+      } else {
+        console.error("Google Auth Error:", err.message || err);
+      }
     }
-  } catch (error: unknown) {
-    const err = error as { code?: string; message?: string };
-
-    if (err.code === "auth/popup-closed-by-user") {
-      console.log("The sign-in popup was closed before completing.");
-    } else {
-      console.error("Google Auth Error:", err.message || err);
-    }
-  }
-};
+  };
 
   return (
     <AuthContext.Provider
