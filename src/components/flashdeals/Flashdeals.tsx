@@ -139,14 +139,14 @@ export default function FlashDeals() {
             </div>
           )}
 
-          <Link
+          {/* <Link
             href="/deals"
             className="flex items-center gap-1 text-xs lg:text-sm font-semibold text-primary hover:underline"
           >
             <span className="md:hidden">View all</span>
             <span className="hidden md:inline">View all deals</span>
             <ArrowRight size={14} className="hidden md:inline" />
-          </Link>
+          </Link> */}
         </div>
       </div>
 

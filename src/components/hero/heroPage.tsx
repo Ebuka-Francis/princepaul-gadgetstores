@@ -5,7 +5,7 @@ import Container from '../layout/Container'
 
 function HeroPage() {
   return (
-   <Container className="bg-linear-to-b from-[#204c93] via-[#5f8bc0] to-white md:bg-none">
+   <Container className="bg-linear-to-b from-[#00289E] via-[#00289E] to-white md:bg-none">
       <HeroSlider />
       <TrustFeatures />
     </Container>

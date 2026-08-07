@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/useCartStore";
+import { useAuth } from "@/context/AuthContext";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { ShoppingBag, MessageSquare, ArrowLeft } from "lucide-react";
@@ -27,6 +28,7 @@ interface PaystackReference {
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, getSubtotal, clearCart } = useCartStore();
+  const { user, openAuthModal } = useAuth();
   const subtotal = getSubtotal();
 
   const [formData, setFormData] = useState({
@@ -43,10 +45,20 @@ export default function CheckoutPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Helper check to ensure user is logged in before running an action
+  const handleAuthRequiredAction = (actionCallback: () => void) => {
+    if (!user) {
+      openAuthModal();
+      return;
+    }
+    actionCallback();
+  };
+
   const handlePaystackSuccess = async (reference: PaystackReference) => {
     try {
       setLoading(true);
       await addDoc(collection(db, "orders"), {
+        userId: user?.uid || null,
         customer: formData,
         items: cart,
         total: subtotal,
@@ -67,10 +79,10 @@ export default function CheckoutPage() {
   };
 
   const handlePaystackClose = () => {
-    alert("Payment window closed.");
+    console.log("Payment window closed.");
   };
 
-  const handleWhatsAppCheckout = () => {
+  const executeWhatsAppCheckout = () => {
     if (!formData.name || !formData.phone) {
       alert("Please enter at least your Name and Phone number for WhatsApp orders.");
       return;
@@ -132,7 +144,7 @@ export default function CheckoutPage() {
                   required 
                   value={formData.name} 
                   onChange={handleInputChange}
-                  placeholder="Prince Paul"
+                  placeholder="Enter your full name"
                   className="w-full px-4 py-2.5 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-blue-700" 
                 />
               </div>
@@ -146,7 +158,7 @@ export default function CheckoutPage() {
                     required 
                     value={formData.email} 
                     onChange={handleInputChange}
-                    placeholder="prince@example.com"
+                    placeholder="name@example.com"
                     className="w-full px-4 py-2.5 text-xs border border-gray-200 rounded-xl focus:outline-none focus:border-blue-700" 
                   />
                 </div>
@@ -223,26 +235,43 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Action Buttons */}
+            {/* Action Buttons with Auth Context Interception */}
             <div className="space-y-3 pt-2">
-              <PaystackCheckoutButton
-                email={formData.email}
-                amount={subtotal}
-                publicKey={process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || ""}
-                onSuccess={handlePaystackSuccess}
-                onClose={handlePaystackClose}
-                loading={loading}
-                disabled={!isFormValid}
-              />
+              
+              {/* Paystack Authentication Wrapper */}
+              <div 
+                onClick={(e) => {
+                  if (!user) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openAuthModal();
+                  }
+                }}
+                className={!user ? "cursor-pointer" : ""}
+              >
+                <div className={!user ? "pointer-events-none opacity-90" : ""}>
+                  <PaystackCheckoutButton
+                    email={formData.email}
+                    amount={subtotal}
+                    publicKey={process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || ""}
+                    onSuccess={handlePaystackSuccess}
+                    onClose={handlePaystackClose}
+                    loading={loading}
+                    disabled={!isFormValid}
+                  />
+                </div>
+              </div>
 
+              {/* WhatsApp Checkout Button with Auth Protection */}
               <button
                 type="button"
-                onClick={handleWhatsAppCheckout}
+                onClick={() => handleAuthRequiredAction(executeWhatsAppCheckout)}
                 className="w-full flex items-center justify-center gap-2 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/20 transition-all cursor-pointer"
               >
                 <MessageSquare size={16} />
                 <span>Complete Order via WhatsApp</span>
               </button>
+
             </div>
 
           </div>

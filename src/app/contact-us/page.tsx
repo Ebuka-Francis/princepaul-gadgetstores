@@ -5,7 +5,7 @@ export default function ContactUsPage() {
         <h1 className="text-2xl font-extrabold text-gray-900">Contact Us</h1>
         <p>Have questions or need assistance? Reach out to our support team:</p>
         <div className="space-y-2 font-semibold text-gray-900">
-          <p>📍 Address: 123 Tech Hub Avenue, Ikeja, Lagos State, Nigeria</p>
+          <p>📍 Address:3 Babatola close, Computer village, Ikeja, Lagos state. </p>
           <p>📞 Phone: 09044560565</p>
           <p>📧 Email: Princepaulgadets@gmail.com</p>
         </div>

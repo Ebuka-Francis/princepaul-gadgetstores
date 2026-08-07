@@ -37,7 +37,7 @@ export default function AnnouncementBar() {
 
           <div className="flex items-center gap-2 text-[12px]">
             <MapPin size={13} />
-            <span>Store Location: 3 Babatola Close, Ikeja, Lagos</span>
+            <span>Store Location: 3 Babatola close, Computer village, Ikeja, Lagos state. </span>
           </div>
 
           <div className="flex items-center gap-3 pl-4 border-l border-white/30">

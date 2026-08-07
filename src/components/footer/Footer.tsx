@@ -27,6 +27,7 @@ import {
 import { auth } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { FaInstagram, FaFacebookF, FaTiktok } from "react-icons/fa6";
+import { navigation } from "@/constants/navigation";
 
 export default function Footer() {
   const { user, isAdmin, logout, loginWithGoogle, openAuthModal } = useAuth();
@@ -153,20 +154,13 @@ export default function Footer() {
               Shop Categories
             </h3>
             <ul className="space-y-2 text-xs sm:text-sm">
-              {[
-                { label: "Smartphones & Tablets", href: "/categories/smartphones" },
-                { label: "Laptops & Computers", href: "/categories/laptops" },
-                { label: "Gaming Consoles", href: "/categories/gaming" },
-                { label: "Audio & Headphones", href: "/categories/accessories" },
-                { label: "Smart Wearables", href: "/categories/smart-gadgets" },
-                { label: "Flash Deals & Offers", href: "/deals" },
-              ].map((link, idx) => (
+              {navigation.map((link, idx) => (
                 <li key={idx}>
                   <Link
                     href={link.href}
                     className="text-slate-400 hover:text-blue-400 transition-colors inline-block py-0.5"
                   >
-                    {link.label}
+                    {link.name}
                   </Link>
                 </li>
               ))}
@@ -208,18 +202,18 @@ export default function Footer() {
             <ul className="space-y-3 text-xs sm:text-sm text-slate-400">
               <li className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                <span>123 Tech Hub Avenue, Ikeja, Lagos State, Nigeria</span>
+                <span>3 Babatola close, Computer village, Ikeja, Lagos state. </span>
               </li>
               <li className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-blue-500 shrink-0" />
-                <a href="tel:+2348000000000" className="hover:text-blue-400">
-                  +234 800 123 4567
+                <a href="tel:+2349044560565" className="hover:text-blue-400">
+                  +234 9044560565
                 </a>
               </li>
               <li className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-blue-500 shrink-0" />
-                <a href="mailto:support@princepaul.com" className="hover:text-blue-400">
-                  support@princepaul.com
+                <a href="mailto:Princepaulgadets@gmail.com" className="hover:text-blue-400">
+                  Princepaulgadets@gmail.com
                 </a>
               </li>
             </ul>
