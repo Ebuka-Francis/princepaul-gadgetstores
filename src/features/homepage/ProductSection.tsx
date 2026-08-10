@@ -16,7 +16,7 @@ export default function ProductSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const q = query(collection(db, "products"), limit(8));
+    const q = query(collection(db, "products"), limit(10));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const productList: Product[] = snapshot.docs.map((doc) => ({
@@ -40,7 +40,7 @@ export default function ProductSection() {
   };
 
   return (
-    <Container>
+    // <Container>
       <section className="mt-8 ">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-4">
@@ -68,7 +68,7 @@ export default function ProductSection() {
           </div>
         ) : (
           /* Static Grid Layout: 4 columns, multiple rows, no animation, no overflow */
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-1">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 ">
             {products.map((product) => {
               const hasDiscount = product.originalPrice && product.originalPrice > product.price;
               const discountPercent = hasDiscount
@@ -147,6 +147,6 @@ export default function ProductSection() {
           </div>
         )}
       </section>
-    </Container>
+    // </Container>
   );
 }
