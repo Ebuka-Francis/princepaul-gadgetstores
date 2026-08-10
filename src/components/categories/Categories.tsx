@@ -11,6 +11,22 @@ const categories = [
     image: "/phones.jpg",
     href: "/category/Smartphones & Tablets",
   },
+    {
+    id: "iwatch",
+    name: "Iwatch",
+    shortName: "Iwatch",
+    count: "120+ products",
+    image: "/Apple_Watch-removebg.png",
+    href: "/category/iwatch",
+  },
+      {
+    id: "samsungwatch",
+    name: "Samsung Galaxy Watch ",
+    shortName: "Samsung Watch",
+    count: "120+ products",
+    image: "/SamsungGalaxy-removeb.png",
+    href: "/category/samsungwatch",
+  },
   {
     id: "laptops",
     name: "Laptops",
@@ -100,36 +116,37 @@ export default function CategorySection() {
       </div>
 
       {/* Desktop View (>= md): 6-Column Card Grid */}
-      <div className="hidden md:grid grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
-        {categories.map((category) => (
-          <Link
-            key={category.id}
-            href={category.href}
-            className="flex items-center gap-3 p-3 bg-slate-50/80 hover:bg-white rounded-xl border border-slate-200/60 hover:border-primary/40 hover:shadow-md transition-all duration-200 group"
-          >
-            {/* Category Image */}
-            <div className="relative w-12 h-12 lg:w-14 lg:h-14 shrink-0 flex items-center justify-center">
-              <Image
-                src={category.image}
-                alt={category.name}
-                width={50}
-                height={50}
-                className="object-contain w-auto h-auto max-h-12 group-hover:scale-105 transition-transform duration-200"
-              />
-            </div>
-
-            {/* Category Info */}
-            <div className="flex flex-col min-w-0">
-              <h3 className="text-xs lg:text-[13px] font-bold text-gray-900 truncate group-hover:text-primary transition-colors">
-                {category.name}
-              </h3>
-              <span className="text-[10px] lg:text-[11px] text-gray-500 font-medium">
-                {category.count}
-              </span>
-            </div>
-          </Link>
-        ))}
+     <div className="hidden md:flex gap-3 lg:gap-4 overflow-x-auto no-scrollbar pb-2">
+  {categories.map((category) => (
+    <Link
+      key={category.id}
+      href={category.href}
+      className="flex items-center gap-3 p-3 bg-slate-50/80 hover:bg-white rounded-xl border border-slate-200/60 hover:border-primary/40 hover:shadow-md transition-all duration-200 group shrink-0 w-[200px] lg:w-[220px]"
+    >
+      {/* Category Image */}
+      <div className="relative w-12 h-12 lg:w-14 lg:h-14 shrink-0 flex items-center justify-center">
+        <Image
+          src={category.image}
+          alt={category.name}
+          width={50}
+          height={50}
+          className="object-contain w-auto h-auto max-h-12 group-hover:scale-105 transition-transform duration-200"
+        />
       </div>
+
+      {/* Category Info */}
+      <div className="flex flex-col min-w-0">
+        <h3 className="text-xs lg:text-[13px] font-bold text-gray-900 truncate group-hover:text-primary transition-colors">
+          {category.name}
+        </h3>
+        <span className="text-[10px] lg:text-[11px] text-gray-500 font-medium">
+          {category.count}
+        </span>
+      </div>
+    </Link>
+  ))}
+</div>
+
     </section>
   );
 }

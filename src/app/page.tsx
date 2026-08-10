@@ -5,6 +5,7 @@ import Container from "@/components/layout/Container";
 import FlashDeals from "@/components/flashdeals/Flashdeals";
 import CategorySection from "@/components/categories/Categories";
 import FooterContainer from "@/components/footer/FooterContainer";
+import ProductSection from "@/features/homepage/ProductSection";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
 <HeroPage />
 <Container>
 <CategorySection />
+<ProductSection />
 <FlashDeals />
 </Container>
 <FooterContainer />

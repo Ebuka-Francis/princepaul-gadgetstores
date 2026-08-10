@@ -8,6 +8,8 @@ import { Loader2, PlusCircle, CheckCircle, Tag, Layers, X } from "lucide-react";
 
 const CATEGORIES = [
   "Smartphones & Tablets",
+  "iwatch",
+  "samsungwatch",
   "Laptops & Computers",
   "Gaming Consoles",
   "Audio & Headphones",
