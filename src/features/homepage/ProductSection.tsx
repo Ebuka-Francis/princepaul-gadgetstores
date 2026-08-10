@@ -57,7 +57,7 @@ export default function ProductSection() {
 
         {/* Loading State */}
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 py-1">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-1">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="bg-white border border-gray-100 rounded-2xl p-3.5 h-40 animate-pulse bg-slate-50" />
             ))}

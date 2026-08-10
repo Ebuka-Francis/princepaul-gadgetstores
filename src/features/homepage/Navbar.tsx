@@ -62,7 +62,7 @@ export default function Navbar() {
     width={70}
     height={50}
     priority
-    className="w-auto h-15 object-contain block lg:hidden"
+    className="w-auto h-15 object-contain block sm:hidden"
   />
 
   {/* Desktop Logo: Shown ONLY on Desktop/Large screens (hidden on mobile) */}
@@ -72,7 +72,7 @@ export default function Navbar() {
     width={70}
     height={50}
     priority
-    className="w-auto h-13 object-contain hidden lg:block"
+    className="w-auto h-13 object-contain hidden sm:block"
   />
 </Link>
             </div>
