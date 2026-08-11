@@ -8,8 +8,23 @@ import {
   GoogleAuthProvider, 
   signInWithPopup,
 } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+
+export async function ensureUserDocument(user: User) {
+  try {
+    await setDoc(
+      doc(db, "users", user.uid),
+      {
+        displayName: user.displayName || "",
+        email: user.email || "",
+      },
+      { merge: true }
+    );
+  } catch (error) {
+    console.error("Failed to create/update user document:", error);
+  }
+}
 
 interface AuthContextType {
   user: User | null;
@@ -83,7 +98,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const provider = new GoogleAuthProvider();
 
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      await ensureUserDocument(result.user);
       closeAuthModal();
     } catch (error: unknown) {
       const err = error as { code?: string; message?: string };

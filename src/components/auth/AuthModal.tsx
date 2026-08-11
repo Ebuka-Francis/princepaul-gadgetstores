@@ -15,6 +15,7 @@ import {
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
+import { ensureUserDocument } from "@/context/AuthContext";
 
 export default function AuthModal() {
   const { isAuthModalOpen, closeAuthModal, loginWithGoogle } = useAuth();
@@ -39,6 +40,7 @@ export default function AuthModal() {
         if (res.user && name) {
           await updateProfile(res.user, { displayName: name });
         }
+        await ensureUserDocument(res.user);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }

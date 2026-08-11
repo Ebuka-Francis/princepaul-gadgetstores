@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { UserProfile } from "@/types/user";
 import { User, Phone, MapPin, Loader2, Save, CheckCircle2 } from "lucide-react";
@@ -74,11 +74,15 @@ export default function ProfileForm() {
     setSuccessMsg(false);
 
     try {
-      await updateDoc(doc(db, "users", currentUser.uid), {
-        displayName: profile.displayName,
-        phoneNumber: profile.phoneNumber,
-        shippingAddress: profile.shippingAddress,
-      });
+      await setDoc(
+        doc(db, "users", currentUser.uid),
+        {
+          displayName: profile.displayName,
+          phoneNumber: profile.phoneNumber,
+          shippingAddress: profile.shippingAddress,
+        },
+        { merge: true }
+      );
 
       setSuccessMsg(true);
       setTimeout(() => setSuccessMsg(false), 3000);
