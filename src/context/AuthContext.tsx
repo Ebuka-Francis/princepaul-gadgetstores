@@ -8,16 +8,20 @@ import {
   GoogleAuthProvider, 
   signInWithPopup,
 } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 
 export async function ensureUserDocument(user: User) {
   try {
+    const userRef = doc(db, "users", user.uid);
+    const existing = await getDoc(userRef);
+
     await setDoc(
-      doc(db, "users", user.uid),
+      userRef,
       {
         displayName: user.displayName || "",
         email: user.email || "",
+        ...(existing.exists() ? {} : { createdAt: serverTimestamp() }),
       },
       { merge: true }
     );
