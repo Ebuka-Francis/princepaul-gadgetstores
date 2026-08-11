@@ -7,8 +7,6 @@ import {
   signOut, 
   GoogleAuthProvider, 
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult
 } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
@@ -57,23 +55,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  // Handle redirect result properly on mount and ensure loading stays true until resolved
   useEffect(() => {
     let isMounted = true;
-
-    const handleRedirect = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result?.user && isMounted) {
-          setUser(result.user);
-          loadAdminStatus(result.user.uid);
-        }
-      } catch (error) {
-        console.error("Redirect sign-in error:", error);
-      }
-    };
-
-    handleRedirect();
 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (isMounted) {
@@ -98,19 +81,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    );
 
     try {
-      if (isMobile) {
-        // This will redirect the page away, saving session state in IndexedDB/LocalStorage
-        await signInWithRedirect(auth, provider);
-      } else {
-        await signInWithPopup(auth, provider);
-        closeAuthModal();
-      }
+      await signInWithPopup(auth, provider);
+      closeAuthModal();
     } catch (error: unknown) {
       const err = error as { code?: string; message?: string };
       if (err.code === "auth/popup-closed-by-user") {
