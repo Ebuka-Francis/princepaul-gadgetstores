@@ -9,8 +9,11 @@ import { db } from '@/lib/firebase';
 import Container from '@/components/layout/Container';
 import { Star, ShoppingCart } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
+import { useCartStore, CartItem } from '@/store/useCartStore';
 
 export default function ProductSection() {
+  const addToCart = useCartStore((state) => state.addToCart);
+
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,8 +38,15 @@ export default function ProductSection() {
   }, []);
 
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
+    e.preventDefault();
     e.stopPropagation();
-    console.log("Added to cart:", product.name);
+    
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.images?.[0] || "",
+    } as CartItem);
   };
 
   return (

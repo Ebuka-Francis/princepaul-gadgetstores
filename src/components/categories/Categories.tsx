@@ -3,13 +3,21 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 
 const categories = [
-  {
-    id: "smartphones",
-    name: "Smartphones",
-    shortName: "Phones",
-    count: "120+ products",
-    image: "/phones.jpg",
-    href: "/category/Smartphones & Tablets",
+    {
+    id: "iphone",
+    name: "Iphone",
+    shortName: "Iphone",
+    count: "110+ products",
+    image: "/iphoneimage.jpg",
+    href: "/category/iphone",
+  },
+     {
+    id: "samsung",
+    name: "Samsung",
+    shortName: "Samsung",
+    count: "110+ products",
+    image: "/samsungImage.jpg",
+    href: "/category/samsung",
   },
     {
     id: "iwatch",
@@ -43,6 +51,14 @@ const categories = [
     image: "/gaming-console.jpg",
     href: "/category/gaming",
   },
+    {
+    id: "smartphones",
+    name: "Smartphones",
+    shortName: "Phones",
+    count: "120+ products",
+    image: "/phones.jpg",
+    href: "/category/Smartphones & Tablets",
+  },
   {
     id: "accessories",
     name: "Accessories",
@@ -51,14 +67,15 @@ const categories = [
     image: "/Accessories.jpg",
     href: "/category/accessories",
   },
-  {
-    id: "smart-gadgets",
-    name: "Smart Gadgets",
-    shortName: "Gadgets",
-    count: "150+ products",
-    image: "/smart-gadgets.jpg",
-    href: "/category/smart-gadgets",
-  },
+  
+  // {
+  //   id: "smart-gadgets",
+  //   name: "Smart Gadgets",
+  //   shortName: "Gadgets",
+  //   count: "150+ products",
+  //   image: "/smart-gadgets.jpg",
+  //   href: "/category/smart-gadgets",
+  // },
   // {
   //   id: "other-devices",
   //   name: "Other Devices",

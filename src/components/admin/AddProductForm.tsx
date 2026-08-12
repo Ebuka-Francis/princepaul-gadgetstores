@@ -7,6 +7,8 @@ import ImageUploader from "./ImageUploader";
 import { Loader2, PlusCircle, CheckCircle, Tag, Layers, X } from "lucide-react";
 
 const CATEGORIES = [
+  "iphone",
+  "samsung",
   "Smartphones & Tablets",
   "iwatch",
   "samsungwatch",
