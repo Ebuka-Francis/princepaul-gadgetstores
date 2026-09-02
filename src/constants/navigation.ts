@@ -9,7 +9,7 @@ export const navigation = [
   },
   {
     name: "Laptops",
-    href: "/category/laptops",
+    href: "/category/laptop",
   },
   {
     name: "Gaming",

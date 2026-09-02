@@ -12,7 +12,7 @@ const CATEGORIES = [
   "Smartphones & Tablets",
   "iwatch",
   "samsungwatch",
-  "Laptops & Computers",
+  "laptop",
   "Gaming Consoles",
   "Audio & Headphones",
   "Smart Wearables",

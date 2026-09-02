@@ -65,11 +65,37 @@ export default function ProductSection() {
           </Link>
         </div>
 
-        {/* Loading State */}
+        {/* Loading State / Skeleton Loader */}
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-1">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-white border border-gray-100 rounded-2xl p-3.5 h-40 animate-pulse bg-slate-50" />
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 py-1">
+            {[...Array(10)].map((_, i) => (
+              <div 
+                key={i} 
+                className="bg-white border border-gray-100 rounded-2xl p-3.5 animate-pulse flex flex-col justify-between shadow-xs"
+              >
+                <div>
+                  {/* Image Skeleton */}
+                  <div className="w-full h-32 md:h-36 bg-slate-100 rounded-xl mb-3" />
+                  
+                  {/* Title Skeleton */}
+                  <div className="space-y-2 mb-3">
+                    <div className="h-3 bg-slate-100 rounded-full w-full" />
+                    <div className="h-3 bg-slate-100 rounded-full w-2/3" />
+                  </div>
+
+                  {/* Price Skeleton */}
+                  <div className="space-y-1.5">
+                    <div className="h-4 bg-slate-100 rounded-full w-1/2" />
+                    <div className="h-2.5 bg-slate-100 rounded-full w-1/3" />
+                  </div>
+                </div>
+
+                {/* Footer Skeleton (Rating & Button) */}
+                <div className="flex items-center justify-between mt-4 pt-1">
+                  <div className="h-3 bg-slate-100 rounded-full w-16" />
+                  <div className="w-8 h-8 bg-slate-100 rounded-xl" />
+                </div>
+              </div>
             ))}
           </div>
         ) : products.length === 0 ? (
@@ -77,7 +103,7 @@ export default function ProductSection() {
             No products available at the moment.
           </div>
         ) : (
-          /* Static Grid Layout: 4 columns, multiple rows, no animation, no overflow */
+          /* Static Grid Layout: 5 columns, multiple rows */
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 ">
             {products.map((product) => {
               const hasDiscount = product.originalPrice && product.originalPrice > product.price;

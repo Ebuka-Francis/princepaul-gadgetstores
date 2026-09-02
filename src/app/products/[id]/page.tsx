@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { doc, getDoc, collection, query, where, limit, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useCartStore, CartItem } from "@/store/useCartStore";
-import Navbar from "@/features/homepage/Navbar";
+import PaySmallSmallModal from "@/components/PaySmallSmallModal";
 import {
   Search,
   Share2,
@@ -28,6 +28,7 @@ import {
   Cpu,
   Camera,
   Battery,
+  HandCoins,
 } from "lucide-react";
 
 export interface ProductDetail {
@@ -65,6 +66,11 @@ export default function ProductDetailsPage({
   const [selectedColor, setSelectedColor] = useState<{ name: string; hex: string } | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState("Description");
+  const [openPayModal, setOpenPayModal] = useState(false);
+
+  const handleClosePayModal = () => {
+    setOpenPayModal(false);
+  };
 
   // Global Flash Sale Timer State managed from Dashboard settings
   const [flashSaleEndTime, setFlashSaleEndTime] = useState<number | null>(null);
@@ -110,13 +116,12 @@ export default function ProductDetailsPage({
           }
         }
 
-        // 2. Fetch Global Flash Sale Countdown from Dashboard Settings (e.g., collection "settings", doc "flashSale")
+        // 2. Fetch Global Flash Sale Countdown from Dashboard Settings
         const settingsRef = doc(db, "settings", "flashSale");
         const settingsSnap = await getDoc(settingsRef);
         if (settingsSnap.exists()) {
           const settingsData = settingsSnap.data();
           if (settingsData?.endTime) {
-            // Can be a Firestore timestamp or ISO string
             const target = settingsData.endTime?.seconds 
               ? settingsData.endTime.seconds * 1000 
               : new Date(settingsData.endTime).getTime();
@@ -188,7 +193,6 @@ export default function ProductDetailsPage({
     );
   }
 
-  // Fallback data for the UI to match the exact mockup
   const images = product.images && product.images.length > 0
     ? product.images
     : Array(5).fill(product.imageUrl || "/placeholder.jpg");
@@ -204,10 +208,12 @@ export default function ProductDetailsPage({
   const activeStorage = selectedStorage || storageList[0];
   const activeColor = selectedColor || colorList[0];
 
+  const formattedProductName = `${product.name} (${activeStorage}, ${activeColor.name})`;
+
   const handleAddToCart = () => {
     addToCart({
       id: product.id,
-      name: `${product.name} (${activeStorage}, ${activeColor.name})`,
+      name: formattedProductName,
       price: product.price,
       image: images[currentImgIndex],
       stock: product.stock,
@@ -221,14 +227,17 @@ export default function ProductDetailsPage({
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] text-gray-900 pb-12 font-sans">
-      {/* <Navbar /> */}
-      {/* --- TOP NAVBAR --- */}
-   
-
-      <div className="max-w-[1400px] mx-auto px-6 md:px-12 space-y-6">
+      <PaySmallSmallModal 
+        isOpen={openPayModal} 
+        onClose={handleClosePayModal} 
+        productName={formattedProductName} 
+        price={product.price}
+      />
+      
+      <div className="max-w-[1400px] mx-auto px-6 md:px-12 space-y-3 sm:space-y-6">
         
         {/* --- BREADCRUMBS --- */}
-        <div className="flex items-center gap-2 py-6 text-xs text-gray-500">
+        <div className="flex items-center gap-2 py-3 text-xs text-gray-500">
           <Link href="/" className="hover:text-gray-800 transition-colors">Home</Link>
           <ChevronRight className="w-3 h-3" />
           <span className="text-gray-900 font-medium">{product.name}</span>
@@ -275,7 +284,7 @@ export default function ProductDetailsPage({
                 alt={product.name}
                 fill
                 priority
-                className="object-contain p-8"
+                className="object-contain p-4"
               />
             </div>
 
@@ -422,10 +431,20 @@ export default function ProductDetailsPage({
               <div className="flex items-center gap-4 pt-8 mt-auto">
                 <button
                   onClick={handleAddToCart}
+                  title="Add to Cart"
                   className="w-14 h-14 flex shrink-0 items-center justify-center bg-white text-gray-700 rounded-xl transition-all cursor-pointer border border-gray-200 hover:bg-gray-50"
                 >
                   <ShoppingCart size={22} />
                 </button>
+               {['iphone', 'samsung'].includes(product.category?.toLowerCase() || '') && (
+  <button
+    onClick={() => setOpenPayModal(true)}
+    title="Pay Small Small"
+    className="w-14 h-14 flex shrink-0 items-center justify-center bg-white text-gray-700 rounded-xl transition-all cursor-pointer border border-gray-200 hover:bg-gray-50"
+  >
+    <HandCoins size={22} />
+  </button>
+)}
                 <button
                   onClick={handleBuyNow}
                   className="flex-1 h-14 bg-[#0044FF] hover:bg-blue-700 text-white font-bold text-base rounded-xl transition-all cursor-pointer flex items-center justify-center"
@@ -482,7 +501,6 @@ export default function ProductDetailsPage({
           
           {/* Tabs Section */}
           <div className="lg:col-span-7 bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-            {/* Added scroll overflow wrapper for mobile */}
             <div className="flex items-center gap-8 border-b border-gray-100 pb-4 overflow-x-auto no-scrollbar">
               {['Description', 'Specifications', 'Reviews (128)', 'Shipping & Delivery'].map((tab) => (
                 <button
@@ -512,7 +530,7 @@ export default function ProductDetailsPage({
                     </p>
                   </div>
 
-                  {/* Key Features Section (Simulating Jumia's structured spec highlights) */}
+                  {/* Key Features Section */}
                   <div className="space-y-3">
                     <h4 className="font-bold text-gray-900 uppercase tracking-wider text-xs text-[#0044FF]">
                       Key Features & Highlights
