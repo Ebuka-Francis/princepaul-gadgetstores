@@ -4,8 +4,12 @@ export const navigation = [
     href: "/",
   },
   {
-    name: "Phones",
-    href: "/category/Smartphones & Tablets",
+    name: "IPhones",
+    href: "/category/iphone",
+  },
+   {
+    name: "Samsung",
+    href: "/category/samsung",
   },
   {
     name: "Laptops",
