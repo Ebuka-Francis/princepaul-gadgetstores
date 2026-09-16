@@ -249,7 +249,7 @@ export default function CheckoutPage() {
                 }}
                 className={!user ? "cursor-pointer" : ""}
               >
-                <div className={!user ? "pointer-events-none opacity-90" : ""}>
+                {/* <div className={!user ? "pointer-events-none opacity-90" : ""}>
                   <PaystackCheckoutButton
                     email={formData.email}
                     amount={subtotal}
@@ -259,7 +259,7 @@ export default function CheckoutPage() {
                     loading={loading}
                     disabled={!isFormValid}
                   />
-                </div>
+                </div> */}
               </div>
 
               {/* WhatsApp Checkout Button with Auth Protection */}
