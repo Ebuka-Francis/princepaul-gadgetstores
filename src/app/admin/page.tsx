@@ -26,8 +26,9 @@ import AdminProductTable from "@/components/admin/AdminProductTable";
 import AdminOrdersTable from "@/components/admin/AdminOrdersTable";
 import AdminUsersTable from "@/components/admin/AdminUsersTable";
 import AdminOverview from "@/components/admin/AdminOverview";
+import InstallmentPaymentsTable from "@/components/admin/InstallmentOrder";
 
-type TabId = "overview" | "products" | "orders" | "users";
+type TabId = "overview" | "products" | "orders" | "users" | "installments";
 
 interface TabItem {
   id: TabId;
@@ -40,6 +41,7 @@ const TABS: TabItem[] = [
   { id: "products", label: "Products", icon: Package },
   { id: "orders", label: "Orders", icon: ShoppingBag },
   { id: "users", label: "Users", icon: Users },
+  { id: "installments", label: "Installments", icon: DollarSign },
 ];
 
 export default function AdminDashboard() {
@@ -333,6 +335,9 @@ export default function AdminDashboard() {
           {activeTab === "orders" && <AdminOrdersTable />}
 
           {activeTab === "users" && <AdminUsersTable />}
+
+          {activeTab === "installments" && <InstallmentPaymentsTable />}
+
         </div>
 
       </div>

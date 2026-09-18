@@ -20,8 +20,8 @@ export default function PaySmallSmallModal({
   onClose, 
   productName, 
   price,
-  productId = "default-id",
-  productImage = "/placeholder.jpg",
+  productId,
+  productImage ,
   stock = 10
 }: PaySmallSmallModalProps) {
   const router = useRouter();
@@ -33,12 +33,14 @@ export default function PaySmallSmallModal({
   const monthlyPayment = Math.round(price / months);
 
   const handleProceed = () => {
+    
+    console.log(`Added ${productImage}`)
     // Add item to cart with typed installment metadata fields
     addToCart({
       id: productId,
       name: productName,
       price: monthlyPayment, // Set initial payable amount in cart to the first installment
-      image: productImage[0] || "/placeholder.jpg",
+      image: productImage || "/placeholder.jpg",
       stock: stock,   
       quantity: 1,
       isInstallment: true,
@@ -48,6 +50,7 @@ export default function PaySmallSmallModal({
       amountPaid: monthlyPayment, // First payment made upon activation
       amountRemaining: price - monthlyPayment,
     } as CartItem);
+
 
     console.log(`Selected ${months} months installment for ${productName} at ₦${monthlyPayment}/mo`);
     onClose();

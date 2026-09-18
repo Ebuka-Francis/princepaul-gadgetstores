@@ -232,6 +232,8 @@ export default function ProductDetailsPage({
         onClose={handleClosePayModal} 
         productName={formattedProductName} 
         price={product.price}
+        productImage={images[0] || "/placeholder.jpg"}
+        productId={product.id}
       />
       
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 space-y-3 sm:space-y-6">
